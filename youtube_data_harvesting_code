@@ -13,7 +13,7 @@ def mysql_connection():
         connection = pymysql.connect(
             host='localhost',
             user='root',
-            password='9965261653@rR',
+            password='password',
             db='bharath',
             charset='utf8mb4',
 
@@ -594,7 +594,7 @@ def mysql_connection():
     conn = pymysql.connect(
         host="localhost",
         user="root",
-        password="9965261653@rR",
+        password="password",
         database="bharath"
     )
     return conn
