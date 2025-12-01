@@ -7,13 +7,13 @@ import re
 import matplotlib.pyplot as plt
 
 # Function to establish MySQL connection
-def mysql_connection():
+def mysql_connection(user, password):
 
     try:
         connection = pymysql.connect(
             host='localhost',
-            user='root',
-            password='password',
+            user=user,
+            password=password,
             db='bharath',
             charset='utf8mb4',
 
@@ -411,8 +411,8 @@ def insert_comment_info(conn, comment_data):
     except pymysql.MySQLError as e:
         st.error(f"Error inserting comment info into MySQL: {e}")
 # Function to execute SQL queries and return results as a DataFrame
-def execute_query(query):
-    conn = mysql_connection()
+def execute_query(query, user, password):
+    conn = mysql_connection(user, password)
     if conn:
         try:
             df = pd.read_sql(query, conn)
@@ -423,8 +423,8 @@ def execute_query(query):
             conn.close()
     return pd.DataFrame()
 
-def check_channel_id(channel_id):
-    conn = mysql_connection()
+def check_channel_id(channel_id, user, password):
+    conn = mysql_connection(user, password)
     if conn:
         with conn.cursor() as cursor:
             cursor.execute("SELECT COUNT(*) FROM ChannelInfo WHERE channel_Id = %s", (channel_id,))
@@ -512,16 +512,21 @@ with st.sidebar:
     st.caption("data collection")
     st.caption("API integration")
     st.caption("Data management using MYSQL")
+    
+    # DB Credentials
+    db_username = st.text_input("Enter DB Username", "root")
+    db_password = st.text_input("Enter DB Password", type="password")
+
 # YouTube API key input
 api_key = st.text_input("Enter your YouTube API key")
 # Channel ID input
 channel_id = st.text_input("Enter YouTube channel ID")
 # Create MySQL tables button
 if st.button("Create MySQL Tables"):
-    conn = mysql_connection()
+    conn = mysql_connection(db_username, db_password)
     if conn:
         create_tables(conn)
-        if check_channel_id(channel_id):
+        if check_channel_id(channel_id, db_username, db_password):
             st.error("Channel ID already registered")
             update_button = st.button("Update")
             new_id_button = st.button("Not Update")
@@ -536,7 +541,7 @@ if st.button("Create MySQL Tables"):
 if st.button("Migrate Data to MYSQL"):
     if api_key and channel_id:
         youtube = build('youtube', 'v3', developerKey=api_key)
-        conn = mysql_connection()
+        conn = mysql_connection(db_username, db_password)
         if conn:
             clear_existing_data(conn, channel_id)  # Clear existing data for the new channel ID
             migrate_data_to_sql(youtube, conn, channel_id)
@@ -546,7 +551,7 @@ if st.button("Migrate Data to MYSQL"):
 # Show data for the entered channel ID
 if st.button("Show Channel Data"):
     if channel_id:
-        conn = mysql_connection()
+        conn = mysql_connection(db_username, db_password)
         if conn:
             query_channel = f"SELECT * FROM ChannelInfo WHERE channel_Id = '{channel_id}'"
             query_playlists = f"SELECT * FROM PlaylistDetails WHERE channel_Id = '{channel_id}'"
@@ -589,29 +594,7 @@ if st.button("Show Channel Data"):
             st.error("Error connecting to MySQL. Please check your connection settings.")
     else:
         st.error("Please enter a channel ID")
-def mysql_connection():
-  try:
-    conn = pymysql.connect(
-        host="localhost",
-        user="root",
-        password="password",
-        database="bharath"
-    )
-    return conn
-  except pymysql.MySQLError as e:
-    print(f"Error connecting to MySQL: {e}")
-    return None
-def execute_query(query):
-  conn = mysql_connection()
-  if conn:
-    try:
-      df = pd.read_sql(query, conn)
-      return df
-    except pymysql.MySQLError as e:
-      print(f"Error executing query: {e}")
-    finally:
-      conn.close()
-  return pd.DataFrame()
+
 # Define SQL queries to fetch complete row details
 query1 = """SELECT *FROM VideoInfo"""
 query2 = """SELECT ChannelInfo.*, COUNT(VideoInfo.video_id) AS video_count FROM ChannelInfo
@@ -633,70 +616,70 @@ query10 = """
 # Streamlit sidebar and buttons for executing queries
 st.sidebar.header("SQL Queries")
 if st.sidebar.button("All details of all videos"):
-    df = execute_query(query1)
+    df = execute_query(query1, db_username, db_password)
     if not df.empty:
         st.header("All details of all videos")
         st.write(df)
     else:
         st.warning("No data found for this query.")
 if st.sidebar.button("Channels with most videos"):
-    df = execute_query(query2)
+    df = execute_query(query2, db_username, db_password)
     if not df.empty:
         st.header("Channels with most videos")
         st.write(df)
     else:
         st.warning("No data found for this query.")
 if st.sidebar.button("Top 10 most viewed videos"):
-    df = execute_query(query3)
+    df = execute_query(query3, db_username, db_password)
     if not df.empty:
         st.header("Top 10 most viewed videos")
         st.write(df)
     else:
         st.warning("No data found for this query.")
 if st.sidebar.button("Videos with most comments"):
-    df = execute_query(query4)
+    df = execute_query(query4, db_username, db_password)
     if not df.empty:
         st.header("Videos with most comments")
         st.write(df)
     else:
         st.warning("No data found for this query.")
 if st.sidebar.button("Videos with highest likes"):
-    df = execute_query(query5)
+    df = execute_query(query5, db_username, db_password)
     if not df.empty:
         st.header("Videos with highest likes")
         st.write(df)
     else:
         st.warning("No data found for this query.")
 if st.sidebar.button("Total likes and dislikes for each video"):
-    df = execute_query(query6)
+    df = execute_query(query6, db_username, db_password)
     if not df.empty:
         st.header("Total likes and dislikes for each video")
         st.write(df)
     else:
         st.warning("No data found for this query.")
 if st.sidebar.button("Total views for each channel"):
-    df = execute_query(query7)
+    df = execute_query(query7, db_username, db_password)
     if not df.empty:
         st.header("Total views for each channel")
         st.write(df)
     else:
         st.warning("No data found for this query.")
 if st.sidebar.button("Channels with videos published in 2022"):
-    df = execute_query(query8)
+    df = execute_query(query8, db_username, db_password)
     if not df.empty:
         st.header("Channels with videos published in 2022")
         st.write(df)
     else:
         st.warning("No data found for this query.")
 if st.sidebar.button("Average duration of videos in each channel"):
-    df = execute_query(query9)
+    df = execute_query(query9, db_username, db_password)
     if not df.empty:
         st.header("Average duration of videos in each channel")
         st.write(df)
     else:
         st.warning("No data found for this query.")
 if st.sidebar.button("Videos with highest comments"):
-    df = execute_query(query10)
+    df = execute_query(query10, db_username, db_password)
     if not df.empty:
         st.header("Videos with highest comments")
         st.write(df)
