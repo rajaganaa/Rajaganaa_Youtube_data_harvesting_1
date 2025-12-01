@@ -30,7 +30,7 @@ This project involves building a Streamlit application to harvest data from YouT
 2. **Install the required Python packages:**
 
     ```bash
-    pip install streamlit google-api-python-client pymysql pandas
+    pip install -r requirements.txt
     ```
 
 3. **Set up your MySQL database:**
@@ -43,7 +43,7 @@ This project involves building a Streamlit application to harvest data from YouT
 1. **Run the Streamlit application:**
 
     ```bash
-    streamlit run app.py
+    streamlit run src/youtube_data_harvesting.py
     ```
 
 2. **Enter your YouTube API key and channel ID:**
