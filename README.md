@@ -1,117 +1,152 @@
-# Rajaganaa_Youtube_data_harvesting_1
+# YouTube Data Harvesting & Warehousing Pipeline
 
-# YouTube Data Harvesting and Warehousing
+![Python](https://img.shields.io/badge/Python-3.8%2B-blue?logo=python&logoColor=white)
+![Streamlit](https://img.shields.io/badge/Framework-Streamlit-red?logo=streamlit)
+![MySQL](https://img.shields.io/badge/Database-MySQL-orange?logo=mysql)
+![API](https://img.shields.io/badge/API-YouTube%20Data%20v3-red?logo=youtube)
+![Status](https://img.shields.io/badge/Status-Production%20Ready-success)
 
-This project involves building a Streamlit application to harvest data from YouTube using the YouTube Data API and store it in a MySQL database. The application allows users to view and query this data through various SQL queries.
+---
 
-## Features
+## 📊 Business Use Case
 
-- Fetch channel information, playlist details, video details, and comments from a YouTube channel.
-- Store the fetched data in a MySQL database.
-- Perform SQL queries on the stored data and display the results in the Streamlit app.
+In the creator economy, **data-driven content strategy is key to growth**. Content creators and marketers need to analyze engagement metrics across channels to understand what works. This application solves the problem of manual data collection by **automating the extraction, transformation, and loading (ETL)** of YouTube data into a structured SQL database. It enables users to:
 
-## Requirements
+- **Benchmark Competitors**: Compare metrics like views, likes, and comment counts across multiple channels.
+- **Analyze Engagement**: Identify high-performing videos and understand audience sentiment through comment analysis.
+- **Archive Data**: Create a persistent local warehouse of channel data for historical analysis, independent of platform availability.
+- **Query Insights**: Answer complex questions (e.g., "Which videos published in 2022 have the most comments?") using SQL.
 
-- Python 3.x
-- Streamlit
-- google-api-python-client
-- pymysql
-- pandas
+---
 
-## Installation
+## 🏗️ Architecture
 
-1. **Clone the repository:**
+The system implements a classic **ETL Pipeline** with a user-friendly Streamlit interface:
 
-    ```bash
-    git clone <repository-url>
-    cd <repository-directory>
-    ```
+```
+┌─────────────────────────────────────────────────────────────┐
+│                       YOUTUBE DATA API                       │
+│                   (External Source System)                  │
+└──────────────────────┬──────────────────────────────────────┘
+                       │ JSON Response
+                       ▼
+┌─────────────────────────────────────────────────────────────┐
+│  ⚙️ EXTRACTION ENGINE (Python)                               │
+│  • Channel Info: Subscribers, Views, Description            │
+│  • Playlist Details: Content structure                      │
+│  • Video Metrics: Likes, Comments, Duration, Tags           │
+│  • Comment Threads: Top-level comments and replies          │
+└──────────────────────┬──────────────────────────────────────┘
+                       │ Structured Data Objects
+                       ▼
+┌─────────────────────────────────────────────────────────────┐
+│  🗄️ DATA WAREHOUSE (MySQL)                                  │
+│  • Relational Schema: Channels ➔ Playlists ➔ Videos ➔ Comments│
+│  • Idempotency: Prevents duplicate data ingestion           │
+│  • Persistence: Long-term storage for querying              │
+└──────────────────────┬──────────────────────────────────────┘
+                       │ SQL Queries
+                       ▼
+┌─────────────────────────────────────────────────────────────┐
+│  📈 ANALYTICS DASHBOARD (Streamlit)                         │
+│  • Data Migration Control: Trigger ETL jobs                 │
+│  • SQL Interface: Execute pre-defined analytical queries    │
+│  • Visualization: Tabular display of insights               │
+└─────────────────────────────────────────────────────────────┘
+```
 
-2. **Install the required Python packages:**
+---
 
-    ```bash
-    pip install -r requirements.txt
-    ```
+## ✨ Features
 
-3. **Set up your MySQL database:**
+### 🚀 **Automated ETL Pipeline**
+- **One-Click Harvesting**: Fetch comprehensive data for any YouTube channel using just its Channel ID.
+- **Deep Extraction**: Recursively retrieves all videos from uploads playlists and associated comments.
+- **Smart Migration**: Seamlessly transfers harvested data into a normalized MySQL schema.
 
-    - Create a database named `bharath` (or modify the code to use your preferred database name).
-    - Ensure your MySQL server is running and you have the necessary privileges to create tables and insert data.
+### 🗄️ **Robust Warehousing**
+- **Relational Design**: Structured tables for `Channels`, `Playlists`, `Videos`, and `Comments` with proper foreign key constraints.
+- **Data Integrity**: Checks for existing channel data to avoid redundancy.
 
-## Usage
+### 🔍 **Advanced Analytics**
+- **SQL-Powered Insights**: Built-in library of complex queries to answer business questions:
+  - *Top 10 most viewed videos*
+  - *Average video duration per channel*
+  - *Videos with highest engagement (likes/comments)*
+- **Interactive Dashboard**: User-friendly interface to input API keys, manage database connections, and view results.
 
-1. **Run the Streamlit application:**
+---
 
-    ```bash
-    streamlit run src/youtube_data_harvesting.py
-    ```
+## 💻 Tech Stack
 
-2. **Enter your YouTube API key and channel ID:**
+| Category | Technologies |
+|----------|-------------|
+| **Language** | Python 3.x |
+| **Frontend** | Streamlit |
+| **Database** | MySQL, pymysql |
+| **API Integration** | google-api-python-client |
+| **Data Processing** | Pandas |
 
-    - You can obtain a YouTube API key from the Google Developer Console.
-    - Enter the channel ID of the YouTube channel you wish to fetch data from.
+---
 
-3. **Create MySQL Tables:**
+## 📦 Installation
 
-    - Click the "Create MySQL Tables" button to create the necessary tables in your MySQL database.
+### Prerequisites
+- Python 3.8 or higher
+- MySQL Server installed and running
+- Google Cloud Console Project with **YouTube Data API v3** enabled
 
-4. **Migrate Data to MySQL:**
+### Setup Steps
 
-    - Click the "Migrate Data to MySQL" button to fetch and store data from the specified YouTube channel.
+1. **Clone the repository**:
+   ```bash
+   git clone git@github.com:rajaganaa/YouTube-Data-ETL-Pipeline.git
+   cd YouTube-Data-ETL-Pipeline
+   ```
 
-5. **Show Channel Data:**
+2. **Install dependencies**:
+   ```bash
+   pip install -r requirements.txt
+   ```
+   *Note: Installs streamlit, google-api-python-client, pymysql, and pandas.*
 
-    - Click the "Show Channel Data" button to view the fetched data in the app.
+3. **Configure Database**:
+   - Ensure your MySQL server is running.
+   - Update the `mysql_connection` function in `src/youtube_data_harvesting.py` with your credentials (host, user, password) if not using the UI inputs.
+   - *Tip: The app allows dynamic input of API keys, but DB credentials might need initial setup.*
 
-6. **Execute SQL Queries:**
+---
 
-    - Use the sidebar to execute predefined SQL queries and view the results.
+## 🚀 Usage
 
-## SQL Queries
+1. **Launch the App**:
+   ```bash
+   streamlit run src/youtube_data_harvesting.py
+   ```
 
-The application supports the following SQL queries:
+2. **Input Credentials**:
+   - Enter your **YouTube API Key** in the sidebar.
+   - Enter the **Channel ID** you want to analyze.
 
-- **All details of all videos**
-- **Channels with most videos**
-- **Top 10 most viewed videos**
-- **Videos with most comments**
-- **Videos with highest likes**
-- **Total likes and dislikes for each video**
-- **Total views for each channel**
-- **Channels with videos published in 2022**
-- **Average duration of videos in each channel**
-- **Videos with highest comments**
+3. **Execute Workflow**:
+   - **Step 1**: Click `Create MySQL Tables` to initialize the database schema.
+   - **Step 2**: Click `Migrate Data to MySQL` to harvest and store data.
+   - **Step 3**: Use the **SQL Query** dropdown to generate insights from the stored data.
 
-## Code Overview
+---
 
-### Functions
+## 📝 License
 
-- **mysql_connection**: Establishes a connection to the MySQL database.
-- **create_tables**: Creates the necessary tables in the MySQL database.
-- **clear_existing_data**: Clears existing data for a specified channel ID.
-- **migrate_data_to_sql**: Migrates data from YouTube to MySQL tables.
-- **get_channel_info**: Fetches channel information from YouTube.
-- **insert_channel_info**: Inserts channel information into MySQL.
-- **get_playlist_details**: Fetches playlist details from YouTube.
-- **insert_playlist_details**: Inserts playlist details into MySQL.
-- **get_videos_ids**: Fetches video IDs from a YouTube channel.
-- **get_video_info**: Fetches video information from YouTube.
-- **insert_video_info**: Inserts video information into MySQL.
-- **get_comment_info**: Fetches comment information from YouTube.
-- **insert_comment_info**: Inserts comment information into MySQL.
-- **execute_query**: Executes an SQL query and returns the result as a DataFrame.
+This project is open-source and available for educational and portfolio purposes.
 
-### Streamlit App
+---
 
-- Sidebar for YouTube API key and channel ID input.
-- Buttons for creating MySQL tables, migrating data, and showing channel data.
-- Sidebar buttons for executing predefined SQL queries.
+## 👤 Author
 
-## Note
+**Rajaganapathy M**  
+GitHub: [@rajaganaa](https://github.com/rajaganaa)  
+Email: rajaganaa@gmail.com
 
-- Ensure to replace `host`, `user`, `password`, and `database` in the `mysql_connection` function with your MySQL server details.
-- Handle sensitive information like database credentials and API keys securely in a production environment.
+---
 
-## License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+**Built with ❤️ for Data Engineering and Analytics**
