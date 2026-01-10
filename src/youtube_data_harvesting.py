@@ -6,6 +6,19 @@ from datetime import datetime
 import re
 import matplotlib.pyplot as plt
 
+def parse_iso_date(date_str):
+    """Parses ISO 8601 date strings with or without fractional seconds."""
+    try:
+        # Try processing with fractional seconds first
+        return datetime.strptime(date_str, '%Y-%m-%dT%H:%M:%S.%fZ').strftime('%Y-%m-%d %H:%M:%S')
+    except ValueError:
+        try:
+            # Fallback to standard format
+            return datetime.strptime(date_str, '%Y-%m-%dT%H:%M:%SZ').strftime('%Y-%m-%d %H:%M:%S')
+        except ValueError:
+             # Return original string or handle failure as needed if both fail (though unlikely for this API)
+             return date_str
+
 # Function to establish MySQL connection
 def mysql_connection(user, password):
 
@@ -213,8 +226,7 @@ def insert_playlist_details(conn, playlist_data):
             Video_count=VALUES(Video_count)
             """
             for data in playlist_data:
-                published_at = datetime.strptime(data['PublishedAt'], '%Y-%m-%dT%H:%M:%SZ').strftime(
-                    '%Y-%m-%d %H:%M:%S')
+                published_at = parse_iso_date(data['PublishedAt'])
                 cursor.execute(sql, (
                     data['Playlist_Id'],
                     data['Title'],
@@ -320,8 +332,7 @@ def insert_video_info(conn, video_data):
             caption_status=VALUES(caption_status)
             """
             for data in video_data:
-                published_at = datetime.strptime(data['published_At'], '%Y-%m-%dT%H:%M:%SZ').strftime(
-                    '%Y-%m-%d %H:%M:%S')
+                published_at = parse_iso_date(data['published_At'])
                 duration=parse_duration(data['duration'])
                 cursor.execute(sql, (
                     data['video_id'],
@@ -393,10 +404,8 @@ def insert_comment_info(conn, comment_data):
             comment_updated_at=VALUES(comment_updated_at)
             """
             for data in comment_data:
-                published_at = datetime.strptime(data['comment_published_at'], '%Y-%m-%dT%H:%M:%SZ').strftime(
-                    '%Y-%m-%d %H:%M:%S')
-                updated_at = datetime.strptime(data['comment_updated_at'], '%Y-%m-%dT%H:%M:%SZ').strftime(
-                    '%Y-%m-%d %H:%M:%S')
+                published_at = parse_iso_date(data['comment_published_at'])
+                updated_at = parse_iso_date(data['comment_updated_at'])
                 cursor.execute(sql, (
                     data['comment_id'],
                     data['video_id'],
@@ -518,7 +527,7 @@ with st.sidebar:
     db_password = st.text_input("Enter DB Password", type="password")
 
 # YouTube API key input
-api_key = st.text_input("Enter your YouTube API key")
+api_key = st.text_input("Enter your YouTube API key", type="password")
 # Channel ID input
 channel_id = st.text_input("Enter YouTube channel ID")
 # Create MySQL tables button
